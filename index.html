@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculateur Salaire Net Brut 2026 – Simulation Instantanée | Service Express</title>
+  <meta name="description" content="Convertissez votre salaire brut en net ou net en brut en 2026. Calcul des cotisations salariales selon les barèmes URSSAF. Cadre, non-cadre, temps partiel.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://salaire.service-express.org/">
+  <style>
+    :root {
+      --bg: #020617;
+      --surface: rgba(255,255,255,0.05);
+      --surface2: rgba(255,255,255,0.03);
+      --border: rgba(255,255,255,0.10);
+      --purple: #a78bfa;
+      --purple-dim: #818cf8;
+      --accent: #7c3aed;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #f87171;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0 16px 60px;
+    }
+
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 0 24px; border-bottom: 1px solid var(--border); margin-bottom: 36px;
+    }
+    .nav-brand { font-size: 15px; font-weight: 600; color: var(--purple); text-decoration: none; }
+    .nav-back  { font-size: 13px; color: var(--muted); text-decoration: none; }
+    .nav-back:hover { color: var(--purple); }
+
+    .container { max-width: 720px; margin: 0 auto; }
+
+    .hero { text-align: center; margin-bottom: 36px; }
+    .hero h1 { font-size: clamp(24px, 5vw, 36px); font-weight: 700; margin-bottom: 8px; }
+    .hero h1 span { color: var(--purple); }
+    .hero p { font-size: 15px; color: var(--muted); }
+
+    /* ── TOGGLE MODE ── */
+    .toggle-row {
+      display: flex; gap: 0; margin-bottom: 24px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+    }
+    .toggle-btn {
+      flex: 1; padding: 12px; font-size: 14px; font-weight: 600;
+      background: transparent; border: none; color: var(--muted); cursor: pointer; transition: all .2s;
+    }
+    .toggle-btn.active { background: var(--accent); color: #fff; }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 28px; margin-bottom: 24px;
+    }
+
+    /* ── INPUTS ── */
+    .field { margin-bottom: 20px; }
+    .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 8px; font-weight: 500; }
+    .field input, .field select {
+      width: 100%; padding: 13px 16px; font-size: 16px;
+      background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+      border-radius: 12px; color: var(--text); outline: none; transition: border-color .2s;
+      -webkit-appearance: none; appearance: none;
+    }
+    .field input:focus, .field select:focus { border-color: var(--purple); }
+    .field select option { background: #1e1b4b; }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media(max-width:480px) { .field-row { grid-template-columns: 1fr; } }
+
+    /* ── BTN ── */
+    .btn-calc {
+      width: 100%; padding: 15px; font-size: 16px; font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), #6d28d9);
+      color: #fff; border: none; border-radius: 14px; cursor: pointer;
+      transition: opacity .2s, transform .15s; margin-top: 4px;
+    }
+    .btn-calc:hover { opacity: .88; transform: translateY(-1px); }
+
+    /* ── RÉSULTAT PRINCIPAL ── */
+    #result { display: none; }
+    .result-hero {
+      text-align: center; padding: 28px 20px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 20px; margin-bottom: 20px;
+    }
+    .result-label { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+    .result-amount { font-size: clamp(42px, 9vw, 64px); font-weight: 800; color: var(--green); line-height: 1; }
+    .result-period { font-size: 14px; color: var(--muted); margin-top: 6px; }
+    .result-annual { font-size: 18px; font-weight: 600; color: var(--purple); margin-top: 10px; }
+
+    /* ── DÉTAIL COTISATIONS ── */
+    .detail-title {
+      font-size: 13px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .1em; margin-bottom: 14px;
+    }
+    .cot-table { width: 100%; border-collapse: collapse; }
+    .cot-table tr { border-bottom: 1px solid var(--border); }
+    .cot-table tr:last-child { border-bottom: none; }
+    .cot-table td { padding: 11px 4px; font-size: 14px; }
+    .cot-table .cot-name { color: var(--muted); }
+    .cot-table .cot-rate { color: var(--purple-dim); text-align: center; font-size: 12px; }
+    .cot-table .cot-amt  { text-align: right; font-weight: 600; color: var(--red); }
+    .cot-table .cot-amt.green { color: var(--green); }
+    .cot-table .cot-amt.amber { color: var(--amber); }
+    .cot-table tr.total td { font-weight: 700; font-size: 15px; border-top: 1px solid var(--border); padding-top: 14px; }
+
+    /* ── GAUGE ── */
+    .gauge-wrap { margin: 24px 0 8px; }
+    .gauge-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .gauge-bar { height: 10px; background: rgba(255,255,255,.08); border-radius: 6px; overflow: hidden; }
+    .gauge-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--accent), var(--green)); transition: width .6s ease; }
+
+    /* ── PILLS INFOS ── */
+    .pills { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    .pill {
+      padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
+      background: rgba(167,139,250,.12); border: 1px solid rgba(167,139,250,.25); color: var(--purple);
+    }
+
+    /* ── SEO ARTICLE ── */
+    .seo-article {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 28px; margin-top: 28px;
+    }
+    .seo-article h2 { font-size: 18px; color: var(--purple); margin-bottom: 12px; }
+    .seo-article h3 { font-size: 15px; color: var(--text); margin: 20px 0 8px; }
+    .seo-article p  { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 10px; }
+    .seo-article ul { padding-left: 18px; color: var(--muted); font-size: 14px; line-height: 2; }
+    .seo-article table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+    .seo-article table th { text-align: left; color: var(--purple); font-weight: 600; padding: 8px 6px; border-bottom: 1px solid var(--border); }
+    .seo-article table td { padding: 8px 6px; color: var(--muted); border-bottom: 1px solid rgba(255,255,255,.05); }
+
+    footer { text-align: center; margin-top: 48px; font-size: 12px; color: var(--muted); }
+    footer a { color: var(--purple-dim); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <nav>
+    <a class="nav-brand" href="https://service-express.org">⚡ Service Express</a>
+    <a class="nav-back" href="https://service-express.org">← Retour au portail</a>
+  </nav>
+
+  <div class="hero">
+    <h1>🧾 Salaire <span>Net / Brut</span></h1>
+    <p>Simulation instantanée basée sur les barèmes URSSAF 2026</p>
+  </div>
+
+  <!-- MODE -->
+  <div class="toggle-row">
+    <button class="toggle-btn active" id="btn-brut-to-net" onclick="setMode('brut')">Brut → Net</button>
+    <button class="toggle-btn" id="btn-net-to-brut" onclick="setMode('net')">Net → Brut</button>
+  </div>
+
+  <!-- FORMULAIRE -->
+  <div class="card">
+    <div class="field">
+      <label id="lbl-montant">Salaire brut mensuel (€)</label>
+      <input type="number" id="montant" placeholder="ex : 2500" min="0" step="50">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Statut</label>
+        <select id="statut">
+          <option value="nc">Salarié non-cadre</option>
+          <option value="c">Salarié cadre</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Temps de travail</label>
+        <select id="temps">
+          <option value="1">Temps plein (35h)</option>
+          <option value="0.8">80% (28h)</option>
+          <option value="0.5">Mi-temps (17.5h)</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-calc" onclick="calculer()">Calculer mon salaire net →</button>
+  </div>
+
+  <!-- RÉSULTAT -->
+  <div id="result">
+    <div class="result-hero">
+      <div class="result-label" id="res-label">Salaire net mensuel estimé</div>
+      <div class="result-amount" id="res-amount">0 €</div>
+      <div class="result-period" id="res-period"></div>
+      <div class="result-annual" id="res-annual"></div>
+    </div>
+
+    <!-- JAUGE -->
+    <div class="card" style="padding:24px 28px">
+      <div class="gauge-wrap">
+        <div class="gauge-label">
+          <span>Net <span id="g-net-pct">–</span></span>
+          <span>Cotisations <span id="g-cot-pct">–</span></span>
+        </div>
+        <div class="gauge-bar"><div class="gauge-fill" id="gauge-fill" style="width:0%"></div></div>
+      </div>
+
+      <!-- DÉTAIL -->
+      <p class="detail-title" style="margin-top:24px">Détail des cotisations salariales</p>
+      <table class="cot-table" id="cot-table"></table>
+
+      <!-- PILLS -->
+      <div class="pills" id="pills"></div>
+    </div>
+  </div>
+
+  <!-- ARTICLE SEO -->
+  <div class="seo-article">
+    <h2>Comment convertir un salaire brut en net en 2026 ?</h2>
+    <p>En France, le salaire net correspond au salaire brut diminué des <strong>cotisations salariales</strong> prélevées par l'employeur pour le compte de l'URSSAF, de la retraite complémentaire (Agirc-Arrco) et de l'assurance chômage.</p>
+
+    <h3>Taux de conversion approximatif</h3>
+    <p>Pour un salarié non-cadre en 2026, le salaire net représente environ <strong>78 à 79 % du brut</strong>. Pour un cadre, ce ratio descend à <strong>75 à 77 %</strong> en raison d'une cotisation retraite complémentaire plus élevée.</p>
+
+    <h3>Principales cotisations salariales 2026</h3>
+    <table>
+      <tr><th>Cotisation</th><th>Taux salarié (non-cadre)</th><th>Taux salarié (cadre)</th></tr>
+      <tr><td>Assurance maladie</td><td>0,00 %</td><td>0,00 %</td></tr>
+      <tr><td>Assurance vieillesse plafonnée</td><td>6,90 %</td><td>6,90 %</td></tr>
+      <tr><td>Assurance vieillesse déplafonnée</td><td>0,40 %</td><td>0,40 %</td></tr>
+      <tr><td>Retraite complémentaire T1 (Agirc-Arrco)</td><td>3,15 %</td><td>3,15 %</td></tr>
+      <tr><td>Retraite complémentaire T2 (Agirc-Arrco)</td><td>–</td><td>8,64 % (tranche 2)</td></tr>
+      <tr><td>Contribution d'équilibre général (CEG)</td><td>0,86 %</td><td>1,08 %</td></tr>
+      <tr><td>Assurance chômage</td><td>–</td><td>–</td></tr>
+      <tr><td>CSG déductible</td><td>6,80 %</td><td>6,80 %</td></tr>
+      <tr><td>CSG/CRDS non déductible</td><td>2,90 %</td><td>2,90 %</td></tr>
+    </table>
+
+    <h3>Salaire net et salaire net imposable</h3>
+    <p>Le salaire net affiché sur votre fiche de paie n'est pas identique au salaire net imposable. Ce dernier intègre la CSG non déductible et la CRDS, qui s'ajoutent à votre revenu fiscal de référence.</p>
+
+    <h3>SMIC 2026</h3>
+    <p>Le SMIC brut mensuel est revalorisé chaque 1er janvier. Pour 2026, le SMIC brut est estimé à environ <strong>1 801 €</strong> pour 35h hebdomadaires, soit un net d'environ <strong>1 426 €</strong>.</p>
+
+    <h3>Différence cadre / non-cadre</h3>
+    <p>La distinction cadre influe principalement sur la tranche 2 de la retraite complémentaire Agirc-Arrco. Pour les salaires supérieurs au plafond de la Sécurité sociale (PMSS 2026 ≈ 3 925 €/mois), la différence de cotisation devient significative.</p>
+
+    <h3>Questions fréquentes</h3>
+    <ul>
+      <li>Mon salaire net peut-il varier d'un mois à l'autre ? Oui, si vous avez des heures supplémentaires, primes, absences.</li>
+      <li>Le prélèvement à la source est-il inclus ? Non – il est prélevé après le calcul du net et varie selon votre taux personnalisé.</li>
+      <li>Ticket restaurant, mutuelle : sont-ils dans le brut ? La part salariale de la mutuelle est dans le brut ; le ticket resto n'y figure pas.</li>
+    </ul>
+  </div>
+
+  <footer>
+    <p>© 2026 Service Express &nbsp;·&nbsp;
+      <a href="https://salaire.service-express.org/privacy.html">Confidentialité</a> &nbsp;·&nbsp;
+      Barèmes URSSAF / Agirc-Arrco 2026 (valeurs indicatives)
+    </p>
+  </footer>
+
+</div>
+
+<script>
+/* ══ Barèmes 2026 (indicatifs) ══════════════════════════════════════════
+   PMSS 2026 ≈ 3 925 €/mois
+   Source : URSSAF, Agirc-Arrco
+═══════════════════════════════════════════════════════════════════════ */
+const PMSS = 3925;
+
+const TAUX = {
+  nc: [ // non-cadre
+    { nom:'Assurance vieillesse (plafonnée)',   taux:0.0690, base:'plaf' },
+    { nom:'Assurance vieillesse (déplafonnée)', taux:0.0040, base:'total' },
+    { nom:'Retraite complémentaire T1',         taux:0.0315, base:'t1' },
+    { nom:'Contribution équilibre (CEG T1)',    taux:0.0086, base:'t1' },
+    { nom:'CSG déductible',                     taux:0.0680, base:'csg' },
+    { nom:'CSG/CRDS non déductible',            taux:0.0290, base:'csg' },
+  ],
+  c: [ // cadre
+    { nom:'Assurance vieillesse (plafonnée)',   taux:0.0690, base:'plaf' },
+    { nom:'Assurance vieillesse (déplafonnée)', taux:0.0040, base:'total' },
+    { nom:'Retraite complémentaire T1',         taux:0.0315, base:'t1' },
+    { nom:'Retraite complémentaire T2',         taux:0.0864, base:'t2' },
+    { nom:'Contribution équilibre (CEG T1)',    taux:0.0086, base:'t1' },
+    { nom:'Contribution équilibre (CEG T2)',    taux:0.0108, base:'t2' },
+    { nom:'CSG déductible',                     taux:0.0680, base:'csg' },
+    { nom:'CSG/CRDS non déductible',            taux:0.0290, base:'csg' },
+  ]
+};
+
+let MODE = 'brut'; // 'brut' or 'net'
+
+function setMode(m) {
+  MODE = m;
+  document.getElementById('btn-brut-to-net').classList.toggle('active', m==='brut');
+  document.getElementById('btn-net-to-brut').classList.toggle('active', m==='net');
+  document.getElementById('lbl-montant').textContent =
+    m === 'brut' ? 'Salaire brut mensuel (€)' : 'Salaire net mensuel souhaité (€)';
+  document.getElementById('result').style.display = 'none';
+}
+
+function bases(brut) {
+  const csg   = brut * 0.9825;           // assiette CSG = 98,25% du brut
+  const plaf  = Math.min(brut, PMSS);
+  const t1    = Math.min(brut, PMSS);    // identique plaf pour simplification
+  const t2    = Math.max(0, Math.min(brut, PMSS * 8) - PMSS); // tranche 2 = PMSS → 8xPMSS
+  return { total: brut, csg, plaf, t1, t2 };
+}
+
+function cotisations(brut, statut) {
+  const b = bases(brut);
+  return TAUX[statut].map(c => ({
+    ...c,
+    montant: c.taux * b[c.base]
+  }));
+}
+
+function brutToNet(brut, statut) {
+  const cots = cotisations(brut, statut);
+  const total = cots.reduce((s, c) => s + c.montant, 0);
+  return { net: brut - total, cots, totalCot: total };
+}
+
+function netToBrut(net, statut) {
+  // Newton simple (converge en 4-5 itérations)
+  let brut = net / 0.775;
+  for (let i = 0; i < 10; i++) {
+    const { net: n } = brutToNet(brut, statut);
+    brut += (net - n) * 0.8;
+  }
+  return brut;
+}
+
+function fmt(n) {
+  return new Intl.NumberFormat('fr-FR', { minimumFractionDigits:2, maximumFractionDigits:2 }).format(n) + ' €';
+}
+function fmtPct(n) { return (n*100).toFixed(1) + ' %'; }
+
+function calculer() {
+  const val    = parseFloat(document.getElementById('montant').value);
+  const statut = document.getElementById('statut').value;
+  const ratio  = parseFloat(document.getElementById('temps').value);
+
+  if (!val || val <= 0) { alert('Veuillez saisir un montant valide.'); return; }
+
+  let brut, net, cots, totalCot;
+  if (MODE === 'brut') {
+    brut = val * ratio;
+    ({ net, cots, totalCot } = brutToNet(brut, statut));
+  } else {
+    const netCible = val * ratio;
+    brut = netToBrut(netCible, statut);
+    ({ net, cots, totalCot } = brutToNet(brut, statut));
+  }
+
+  /* ── Résultat principal ── */
+  const affiche = MODE === 'brut' ? net : brut;
+  const affLabel = MODE === 'brut' ? 'Salaire net mensuel estimé' : 'Salaire brut mensuel correspondant';
+  document.getElementById('res-label').textContent = affLabel;
+  document.getElementById('res-amount').textContent = fmt(affiche);
+  document.getElementById('res-period').textContent =
+    `Base brute : ${fmt(brut)} | Cotisations : ${fmt(totalCot)}`;
+  document.getElementById('res-annual').textContent =
+    `Soit ${fmt(net * 12)} net annuel`;
+
+  /* ── Jauge ── */
+  const netPct = (net / brut * 100).toFixed(1);
+  const cotPct = (totalCot / brut * 100).toFixed(1);
+  document.getElementById('gauge-fill').style.width = netPct + '%';
+  document.getElementById('g-net-pct').textContent = netPct + '%';
+  document.getElementById('g-cot-pct').textContent = cotPct + '%';
+
+  /* ── Tableau cotisations ── */
+  const tbl = document.getElementById('cot-table');
+  tbl.innerHTML = `
+    <tr>
+      <td class="cot-name" style="font-weight:600;color:var(--text)">Salaire brut</td>
+      <td class="cot-rate"></td>
+      <td class="cot-amt green">${fmt(brut)}</td>
+    </tr>
+  `;
+  cots.forEach(c => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="cot-name">${c.nom}</td>
+      <td class="cot-rate">${fmtPct(c.taux)}</td>
+      <td class="cot-amt">– ${fmt(c.montant)}</td>
+    `;
+    tbl.appendChild(tr);
+  });
+  const trTotal = document.createElement('tr');
+  trTotal.className = 'total';
+  trTotal.innerHTML = `
+    <td class="cot-name">Total cotisations</td>
+    <td class="cot-rate"></td>
+    <td class="cot-amt amber">– ${fmt(totalCot)}</td>
+  `;
+  tbl.appendChild(trTotal);
+  const trNet = document.createElement('tr');
+  trNet.className = 'total';
+  trNet.innerHTML = `
+    <td class="cot-name" style="color:var(--green)">Salaire NET</td>
+    <td class="cot-rate"></td>
+    <td class="cot-amt green">${fmt(net)}</td>
+  `;
+  tbl.appendChild(trNet);
+
+  /* ── Pills ── */
+  const isHours = ratio < 1;
+  const pills = [
+    `📅 Annuel net : ${fmt(net * 12)}`,
+    `📊 Taux de prélèvement : ${cotPct}%`,
+    `⚖️ Statut : ${statut === 'c' ? 'Cadre' : 'Non-cadre'}`,
+    isHours ? `⏱️ Temps partiel : ${(ratio*100).toFixed(0)}%` : `⏱️ Temps plein`,
+  ];
+  document.getElementById('pills').innerHTML = pills.map(p => `<div class="pill">${p}</div>`).join('');
+
+  document.getElementById('result').style.display = 'block';
+  document.getElementById('result').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+</script>
+
+</body>
+</html>
